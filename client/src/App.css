@@ -4,6 +4,8 @@
 
 .main-div {
   display: flex;
+  height: 100%;
+  width: 100%;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -56,4 +58,39 @@
 .player .opponent {
   display: flex;
   flex-direction: column;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vh;
+  gap: 10vh;
+  justify-content: center;
+  align-items: center;
+}
+
+h1 {
+  font-size: 5vw;
+}
+
+.standards {
+  display: flex;
+  gap: 2vh;
+}
+
+.std-btn {
+  font-size: 4vw;
+  font-family: "Happy Monkey", sans-serif;
+  width: 20vw;
+  font-weight: 700;
+  border: none;
+  background-color: #e4ca56;
+  cursor: pointer;
+  border-radius: 5px;
+  outline: none;
+}
+
+button:hover {
+  background-color: yellow;
 }

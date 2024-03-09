@@ -134,6 +134,11 @@ io.on("connection", async (socket) => {
     socket.to(allUsers[socket.id].room).emit("damage", {attacker: socket.id, damage: data.damage})
   })
 
+  // send game result
+  socket.on("win", () => {
+    socket.to(allUsers[socket.id].room).emit("result", {winner: socket.id})
+  })
+
   // update equations
 
   // handle on player disocnnect

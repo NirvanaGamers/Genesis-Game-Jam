@@ -1,18 +1,18 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
 
-const Timer = ({ turn, setTurn }) => {
+const Timer = ({ counter, setCounter, attackSent }) => {
   React.useEffect(() => {
     let timeoutId;
 
-    if (turn.counter > 0 && !turn.attack_sent) {
-      timeoutId = setTimeout(() => setTurn({...turn, counter: turn.counter - 1}), 1000);
+    if (counter > 0 && !attackSent) {
+      timeoutId = setTimeout(() => setCounter(counter-1), 1000);
     }
 
     return () => clearTimeout(timeoutId);
-  }, [turn.counter, turn.attack_sent]);
+  }, [counter, attackSent]);
 
-  return <div>Countdown: {turn.counter}</div>;
+  return <div>Countdown: {counter}</div>;
 };
 
 export default Timer;

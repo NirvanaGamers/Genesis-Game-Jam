@@ -35,7 +35,7 @@ const App = () => {
     health: 100,
     sprite: idleSprite
   })
-  
+
   const [counter, setCounter] = useState(15)
   const [attackSent, setAttackSent] = useState(false)
   const [attackReceived, setAttackReceived] = useState(false)
@@ -51,7 +51,7 @@ const App = () => {
       return;
     }
     console.log(`Clicked cell value: ${value}`);
-    const result = evaluate(value.replace("x", turn.counter));
+    const result = evaluate(value.replace("x", counter));
     socket?.emit("attack", {
       damage: round(result)
     });
@@ -63,32 +63,40 @@ const App = () => {
   };
 
   React.useEffect(() => {
-    if (player.damage) {
-      updatePlayer({ ...player, sprite: attackSprite });
+    if (attackReceived && attackSent) {
+      setCanPlay(false)
+
       setTimeout(() => {
-        updateOpponent({ ...opponent, health: Math.max(0, opponent.health - player.damage) })
-        updatePlayer({ ...player, damage: 0, sprite: idleSprite })
-        if (turn.attack_sent && turn.attack_received) {
-          updateTurn({...turn, can_play: true})
-        }
-      }, 2000);
+        updatePlayer({ ...player, sprite: attackSprite })
+        updateOpponent({ ...opponent, sprite: attackSprite })
+      }, 750)
+      // do animations
+      setTimeout(() => {
+        const playerDamage = player.damage
+        const opponentDamage = opponent.damage
+
+        updateOpponent({ ...opponent, health: Math.max(0, opponent.health - playerDamage), damage: 0, sprite: idleSprite })
+        updatePlayer({ ...player, health: Math.max(0, player.health - opponentDamage), damage: 0, sprite: idleSprite })
+
+        setTimeout(() => {
+          setCanPlay(true)
+          setAttackReceived(false)
+          setAttackSent(false)
+          setCounter(15)
+        }, 1000)
+      }, 3000);
     }
-  }, [turn.attack_sent]);
+  }, [attackSent, attackReceived]);
 
   React.useEffect(() => {
-    if (opponent.damage) {
-      updateOpponent({ ...opponent, sprite: attackSprite });
-      setTimeout(() => {
-        updatePlayer({ ...player, health: Math.max(0, player.health - opponent.damage) })
-        updateOpponent({ ...opponent, damage: 0, sprite: idleSprite })
-        if (turn.attack_sent && turn.attack_received) {
-          updateTurn({...turn, can_play: true})
-        }
-      }, 2000);
+    if (!canPlay) {
+      updatePlayer({ ...player, sprite: attackSprite })
+      updateOpponent({ ...opponent, sprite: attackSprite })
     } else {
-      updateOpponent({ ...opponent, sprite: idleSprite })
+      updatePlayer({ ...player, damage: 0, sprite: idleSprite })
+      updateOpponent({ ...opponent, damage: 0, sprite: idleSprite })
     }
-  }, [turn.attack_received]);
+  }, [canPlay])
 
   const takePlayerName = async () => {
     const result = await Swal.fire({
@@ -113,7 +121,7 @@ const App = () => {
     console.log("received damage");
     if (data.attacker != socket?.id) {
       updateOpponent({ ...opponent, damage: data.damage });
-      updateTurn({ ...turn, attack_received: true})
+      setAttackReceived(true)
     }
   });
 
@@ -215,36 +223,41 @@ const App = () => {
 
   return (
     <div className="main-div">
-      <div>
-        <h1 className="game-heading water-background">Math Duel</h1>
-        <div className="expression-matrix">
-          <Grid
-            data={data}
-            onCellClick={handleCellClick}
-            isCellClicked={turn.attack_sent}
-          />
+      {canPlay &&
+        <div>
+          <h1 className="game-heading water-background">Math Duel</h1>
+          <div className="expression-matrix">
+            <Grid
+              data={data}
+              onCellClick={handleCellClick}
+              isCellClicked={attackSent}
+            />
+          </div>
+          <div className="timer">
+            <Timer
+              counter={counter}
+              setCounter={setCounter}
+              attackSent={attackSent}
+            />
+          </div>
         </div>
-        <div className="timer">
-          <Timer
-            turn={turn}
-            setTurn={updateTurn}
-          />
+      }
+      {!canPlay &&
+        <div className="users">
+          <div className="player">
+            <div className="player-tag">{player.name}</div>
+            <Player imageUrl={player.sprite} />
+            <div className="user-health">HP : {player.health}</div>
+            <div className="user-damage">Attack : {player.damage}</div>
+          </div>
+          <div className="opponent">
+            <div className="opp-tag">{opponent.name}</div>
+            <Player imageUrl={opponent.sprite} flip />
+            <div className="opp-health">HP : {opponent.health}</div>
+            <div className="opp-damage">Attack : {opponent.damage}</div>
+          </div>
         </div>
-      </div>
-      <div className="users">
-        <div className="player">
-          <div className="player-tag">{player.name}</div>
-          <Player imageUrl={player.sprite} />
-          <div className="user-health">HP : {player.health}</div>
-          <div className="user-damage">Attack : {player.damage}</div>
-        </div>
-        <div className="opponent">
-          <div className="opp-tag">{opponent.name}</div>
-          <Player imageUrl={opponent.sprite} flip />
-          <div className="opp-health">HP : {opponent.health}</div>
-          <div className="opp-damage">Attack : {opponent.damage}</div>
-        </div>
-      </div>
+      }
     </div>
   );
 };

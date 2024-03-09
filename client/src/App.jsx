@@ -5,7 +5,8 @@ import io from "socket.io-client";
 import "./App.css";
 import Grid from "./Grid/Grid";
 import Timer from "./Timer/Timer";
-import Player from "./Player/Player";
+import Move from "./Move/Move";
+import MoveSummary from "./Summary/MoveSummary";
 
 const data = [
   "2 * x",
@@ -37,9 +38,12 @@ const App = () => {
   })
 
   const [counter, setCounter] = useState(15)
+
   const [attackSent, setAttackSent] = useState(false)
   const [attackReceived, setAttackReceived] = useState(false)
-  const [canPlay, setCanPlay] = useState(true)
+
+  const [showAnimation, setShowAnimation] = useState(false)
+  const [showResult, setShowResult] = useState(false)
 
   const [playOnline, setPlayOnline] = useState(false);
   const [socket, setSocket] = useState(null);
@@ -64,7 +68,7 @@ const App = () => {
 
   React.useEffect(() => {
     if (attackReceived && attackSent) {
-      setCanPlay(false)
+      setShowAnimation(true)
 
       setTimeout(() => {
         updatePlayer({ ...player, sprite: attackSprite })
@@ -79,7 +83,7 @@ const App = () => {
         updatePlayer({ ...player, health: Math.max(0, player.health - opponentDamage), damage: 0, sprite: idleSprite })
 
         setTimeout(() => {
-          setCanPlay(true)
+          setShowAnimation(false)
           setAttackReceived(false)
           setAttackSent(false)
           setCounter(15)
@@ -99,7 +103,7 @@ const App = () => {
       return
     }
     window.location.reload()
-  }, [canPlay])
+  }, [showAnimation])
 
   const takePlayerName = async () => {
     const result = await Swal.fire({
@@ -118,7 +122,7 @@ const App = () => {
 
   socket?.on("opponent_disconnected", () => {
     alert(`${opponent.name} disconnected`)
-    updateOpponent({...opponent, health: 0})
+    updateOpponent({ ...opponent, health: 0 })
   });
 
   socket?.on("damage", (data) => {
@@ -150,7 +154,7 @@ const App = () => {
     }
   });
 
-  async function playOnlineClick() {
+  const playOnlineClick = async () => {
     const result = await takePlayerName();
 
     if (!result.isConfirmed) {
@@ -174,6 +178,10 @@ const App = () => {
     });
 
     setSocket(newSocket);
+  }
+
+  const onReadyHandler = async () => {
+    
   }
 
   if (!difficulty) {
@@ -219,7 +227,7 @@ const App = () => {
 
   return (
     <div className="main-div">
-      {canPlay &&
+      {!showAnimation && !showResult &&
         <div>
           <h1 className="game-heading water-background">Math Duel</h1>
           <div className="expression-matrix">
@@ -239,22 +247,9 @@ const App = () => {
           </div>
         </div>
       }
-      {!canPlay &&
-        <div className="users">
-          <div className="player">
-            <div className="player-tag">{player.name}</div>
-            <Player imageUrl={player.sprite} />
-            <div className="user-health">HP : {player.health}</div>
-            <div className="user-damage">Attack : {player.damage}</div>
-          </div>
-          <div className="opponent">
-            <div className="opp-tag">{opponent.name}</div>
-            <Player imageUrl={opponent.sprite} flip />
-            <div className="opp-health">HP : {opponent.health}</div>
-            <div className="opp-damage">Attack : {opponent.damage}</div>
-          </div>
-        </div>
-      }
+      {!showResult && showAnimation && <Move player={player} opponent={opponent} />}
+
+      {showResult && !showResult && <MoveSummary onReady={onReadyHandler} />}
     </div>
   );
 };

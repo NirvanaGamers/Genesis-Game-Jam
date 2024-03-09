@@ -1,4 +1,4 @@
-import { generateExpression } from "./expression";
+const { generateExpression } = require("./expression");
 
 function genEasyGrid() {
   let grid = [];
@@ -43,4 +43,4 @@ function generateGrid(difficulty = "easy") {
   }
 }
 
-export { generateGrid };
+// export { generateGrid };

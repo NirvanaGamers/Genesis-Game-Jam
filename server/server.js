@@ -5,7 +5,7 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const { randomUUID } = require("crypto");
 const { SocketAddress } = require("net");
-import { generateGrid } from "./expGrid";
+const { generateGrid } = require("./expGrid")
 app.use(cors());
 
 const server = http.createServer(app);

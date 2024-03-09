@@ -138,8 +138,8 @@ io.on("connection", async (socket) => {
   });
 
   // send game result
-  socket.on("win", () => {
-    io.to(allUsers[socket.id].room).emit("result", { winner: socket.id });
+  socket.on("ready", () => {
+    io.to(allUsers[socket.id].room).emit("ready", { player: socket.id });
   });
 
   // generate equations

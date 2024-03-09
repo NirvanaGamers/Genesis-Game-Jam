@@ -28,13 +28,15 @@ const App = () => {
     name: "",
     damage: null,
     health: 100,
-    sprite: idleSprite
+    sprite: idleSprite,
+    ready: false
   })
   const [opponent, updateOpponent] = useState({
     name: null,
     damage: null,
     health: 100,
-    sprite: idleSprite
+    sprite: idleSprite,
+    ready: false
   })
 
   const [counter, setCounter] = useState(15)
@@ -84,27 +86,23 @@ const App = () => {
 
         setTimeout(() => {
           setShowAnimation(false)
-          setAttackReceived(false)
-          setAttackSent(false)
-          setCounter(15)
+          setShowResult(true)
         }, 1000)
       }, 3000);
     }
   }, [attackSent, attackReceived]);
 
   React.useEffect(() => {
-    if (player.health == 0 && opponent.health == 0) {
-      alert("Game Draw")
-    } else if (player.health == 0) {
-      alert("You Loose")
-    } else if (opponent.health == 0) {
-      alert("You Win")
-    } else {
-      return
+    if (player.ready && opponent.ready) {
+      updatePlayer({ ...player, ready: false })
+      updateOpponent({ ...opponent, ready: false })
+      setAttackSent(false)
+      setAttackReceived(false)
+      setCounter(15)
+      setShowResult(false)
     }
-    window.location.reload()
-  }, [showAnimation])
-
+  }, [player.ready, opponent.ready])
+  
   const takePlayerName = async () => {
     const result = await Swal.fire({
       title: "Enter your name",
@@ -154,6 +152,13 @@ const App = () => {
     }
   });
 
+  socket?.on("ready", (data) => {
+    console.log(data)
+    if (data.player !== socket?.id) {
+      updateOpponent({ ...opponent, ready: true })
+    }
+  })
+
   const playOnlineClick = async () => {
     const result = await takePlayerName();
 
@@ -181,7 +186,8 @@ const App = () => {
   }
 
   const onReadyHandler = async () => {
-    
+    socket?.emit("ready", {})
+    updatePlayer({ ...player, ready: true })
   }
 
   if (!difficulty) {
@@ -249,7 +255,7 @@ const App = () => {
       }
       {!showResult && showAnimation && <Move player={player} opponent={opponent} />}
 
-      {showResult && !showResult && <MoveSummary onReady={onReadyHandler} />}
+      {showResult && !showAnimation && <MoveSummary onReady={onReadyHandler} />}
     </div>
   );
 };

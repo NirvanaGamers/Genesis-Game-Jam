@@ -1,5 +1,5 @@
-const MoveSummary = ({ }) => {
-    return <div> {"Hello World"} </div>
+const MoveSummary = ({ onReady }) => {
+    return <div> {"Hello World"} <button onClick={onReady}>Ready</button></div>
 }
 
 export default MoveSummary;

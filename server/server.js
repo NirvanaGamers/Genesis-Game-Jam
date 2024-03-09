@@ -74,8 +74,14 @@ io.on("connection", async (socket) => {
     socket.join(roomId)
 
     socket.to(roomId).emit("match_found", {
-      player1: allUsers[room.players[0]].userName,
-      player2: data.userName
+      player1: {
+        userName: allUsers[room.players[0]].userName,
+        id: room.players[0]
+      },
+      player2: {
+        id: socket.id,
+        userName: data.userName
+      }
     })
   })
 
@@ -109,8 +115,14 @@ io.on("connection", async (socket) => {
       currentUser.room = roomId
 
       socket.to(roomId).emit("match_found", {
-        player1: currentUser.userName,
-        player2: opponent.userName
+        player1: {
+          id: currentUser.socket.id,
+          userName: currentUser.userName
+        },
+        player2: {
+          id: opponent.socket.id,
+          userName: opponent.userName
+        }
       })
     } else {
       queue.push(currentUser)
@@ -118,6 +130,9 @@ io.on("connection", async (socket) => {
   })
 
   // send damage
+  socket.on("attack", (data) => {
+    socket.to(allUsers[socket.id].room).emit("damage", {attacker: socket.id, damage: data.damage})
+  })
 
   // update equations
 

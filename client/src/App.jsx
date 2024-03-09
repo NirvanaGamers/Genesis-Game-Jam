@@ -45,10 +45,9 @@ const App = () => {
     setIsCellClicked(true);
     console.log(`Clicked cell value: ${value}`);
     const result = evaluate(value.replace("x", counter));
-    const id = socket?.id;
-    socket?.emit("playerMoveFromClient", {
-      id,
-      result,
+    console.log("sent attack")
+    socket?.emit("attack", {
+      damage: result
     });
     setPlayerDamage(round(result));
   };
@@ -145,24 +144,30 @@ const App = () => {
     return result;
   };
 
-  socket?.on("opponentLeftMatch", () => {
+  socket?.on("opponent_disconnected", () => {
     alert("You Won");
   });
 
-  socket?.on("playerMoveFromServer", (data) => {
-    setOpponentDamage(data.result);
+  socket?.on("damage", (data) => {
+    console.log("received damage")
+    if (data.attacker != socket?.id) {
+      setOpponentDamage(data.result);
+    }
   });
 
   socket?.on("connect", function () {
+    console.log("connected to server")
     setPlayOnline(true);
   });
 
-  socket?.on("OpponentNotFound", function () {
-    setOpponentName(false);
-  });
-
-  socket?.on("OpponentFound", function (data) {
-    setOpponentName(data.opponentName);
+  socket?.on("match_found", function (data) {
+    console.log("match found")
+    console.log(data)
+    if (data.player1.id !== socket?.id) {
+      setOpponentName(data.player1.userName);
+    } else {
+      setOpponentName(data.player2.userName);
+    }
   });
 
   // socket?.on("winner", function (data) {
@@ -187,8 +192,10 @@ const App = () => {
       autoConnect: true,
     });
 
-    newSocket?.emit("request_to_play", {
-      playerName: username,
+    console.log("finding match")
+    newSocket?.emit("find_match", {
+      userName: username,
+      difficulty: "easy"
     });
 
     setSocket(newSocket);

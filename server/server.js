@@ -73,7 +73,7 @@ io.on("connection", async (socket) => {
     room.players.push(socket.id)
     socket.join(roomId)
 
-    socket.to(roomId).emit("match_found", {
+    io.to(roomId).emit("match_found", {
       player1: {
         userName: allUsers[room.players[0]].userName,
         id: room.players[0]
@@ -88,7 +88,7 @@ io.on("connection", async (socket) => {
   // enter matchmaking (random queue)
   socket.on("find_match", (data) => {
     const currentUser = allUsers[socket.id]
-    currentUser.name = data.userName
+    currentUser.userName = data.userName
 
     let queue = undefined
     if (data.difficulty == "easy") {
@@ -114,7 +114,7 @@ io.on("connection", async (socket) => {
       opponent.room = roomId
       currentUser.room = roomId
 
-      socket.to(roomId).emit("match_found", {
+      io.to(roomId).emit("match_found", {
         player1: {
           id: currentUser.socket.id,
           userName: currentUser.userName
@@ -131,12 +131,12 @@ io.on("connection", async (socket) => {
 
   // send damage
   socket.on("attack", (data) => {
-    socket.to(allUsers[socket.id].room).emit("damage", {attacker: socket.id, damage: data.damage})
+    io.to(allUsers[socket.id].room).emit("damage", {attacker: socket.id, damage: data.damage})
   })
 
   // send game result
   socket.on("win", () => {
-    socket.to(allUsers[socket.id].room).emit("result", {winner: socket.id})
+    io.to(allUsers[socket.id].room).emit("result", {winner: socket.id})
   })
 
   // update equations

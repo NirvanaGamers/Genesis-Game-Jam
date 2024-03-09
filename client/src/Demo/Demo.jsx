@@ -1,10 +1,15 @@
-import Typewriter from "./StoryComponent/TypeWriter";
+import Typewriter from "../StoryComponent/TypeWriter";
 import { useState, useEffect } from "react";
-import Grid from './Grid/SimpleGrid';
-import Player from "./Player/Player";
+import "./Demo.css";
+import Grid from "../Grid/Grid";
+import Player from "../Player/Player";
 
 const AttackData = ["7 * 8", "9 + 19", "240 - 215"];
-let startStory = "A long long time ago there was a math-kingdom which was having war against math barbarians, as a main attacker help math-kingdom....";
+const startStory =
+  "A long long time ago there was a math-kingdom which was having war against math barbarians, as a main attacker help math-kingdom....";
+
+const round1Text =
+  "The opponent also gets the same choices and has the same objective as you that is to defeat you.";
 
 const Demo = () => {
   const [isStory, setIsStory] = useState(true);
@@ -24,11 +29,11 @@ const Demo = () => {
     }
   }, [isStory, isGame]);
 
-  function StoryHandle() {
+  function storyHandle() {
     setIsStory(!isStory);
   }
 
-  function GameHandle() {
+  function gameHandle() {
     setIsGame(!isGame);
   }
 
@@ -42,37 +47,44 @@ const Demo = () => {
     }
     setAttack(attackDamage);
     setUserAttack(attackDamage);
-    GameHandle();
+    gameHandle();
   }
 
-//   function OutputHandle() {
-//     setIsOutput(!isOutput);
-//   }
+  function OutputHandle() {
+    setIsOutput(true);
+  }
 
   if (isStory) {
     setTimeout(() => {
-      StoryHandle();
-      GameHandle();
-    }, startStory.length * 60);
+      storyHandle();
+      gameHandle();
+    }, startStory.length * 80);
 
-    return <Typewriter text={startStory} speed={50} />;
+    return (
+      <div className="story">
+        <Typewriter text={startStory} speed={60} />;
+      </div>
+    );
   }
 
   if (isGame) {
     return (
       <div className="game">
-        <Grid
-          data={AttackData}
-          onCellClick={handleCellClick}
-        />
-        <p><br /> Choose Your Attack</p>
+        <p>Choose Your Attack</p>
+        <Grid data={AttackData} onCellClick={handleCellClick} />
+        <p>Click On The Expression That Has The Highest Value</p>
       </div>
     );
   }
 
-  if (!isGame && !isStory) {
+  if (!isGame && !isStory && !isOutput) {
+    setTimeout(() => {
+      OutputHandle();
+    }, round1Text.length * 80);
     return (
-      <Typewriter text="The opponent has chosen shield guard of 20 pts" speed={50} />
+      <div className="story">
+        <Typewriter text={round1Text} speed={60} />
+      </div>
     );
   }
 
@@ -94,6 +106,6 @@ const Demo = () => {
       </div>
     );
   }
-}
+};
 
 export default Demo;

@@ -1,0 +1,25 @@
+.game {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.story {
+  width: 100vw;
+  height: 100vh;
+  padding: 0 20vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.game {
+  flex-direction: column;
+}
+
+p,
+.story {
+  font-size: 2vw;
+}

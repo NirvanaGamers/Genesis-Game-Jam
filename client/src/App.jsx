@@ -7,6 +7,7 @@ import Grid from "./Grid/Grid";
 import Timer from "./Timer/Timer";
 import Move from "./Move/Move";
 import MoveSummary from "./Summary/MoveSummary";
+import Demo from "./Demo/Demo";
 
 const App = () => {
   const idleSprite = "../src/assets/Character/Archer/Idle.png";
@@ -17,89 +18,106 @@ const App = () => {
     damage: null,
     health: 100,
     sprite: idleSprite,
-    ready: false
-  })
+    ready: false,
+  });
   const [opponent, updateOpponent] = useState({
     name: null,
     damage: null,
     health: 100,
     sprite: idleSprite,
-    ready: false
-  })
+    ready: false,
+  });
 
-  const [counter, setCounter] = useState(15)
+  const [counter, setCounter] = useState(15);
 
-  const [attackSent, setAttackSent] = useState(false)
-  const [attackReceived, setAttackReceived] = useState(false)
+  const [attackSent, setAttackSent] = useState(false);
+  const [attackReceived, setAttackReceived] = useState(false);
 
-  const [showAnimation, setShowAnimation] = useState(false)
-  const [showResult, setShowResult] = useState(true)
+  const [showAnimation, setShowAnimation] = useState(false);
+  const [showResult, setShowResult] = useState(true);
 
   const [playOnline, setPlayOnline] = useState(false);
   const [socket, setSocket] = useState(null);
 
-  const [isPlayer1, setIsPlayer1] = useState(false)
-  const [equations, setEquations] = useState(false)
+  const [isPlayer1, setIsPlayer1] = useState(false);
+  const [equations, setEquations] = useState(false);
 
   const [difficulty, setDifficulty] = useState(null);
 
-  const [history, updateHistory] = useState({ player: [], opponent: [] })
-  const [currentRound, updateRound] = useState(0)
+  const [history, updateHistory] = useState({ player: [], opponent: [] });
+  const [currentRound, updateRound] = useState(0);
+
+  const [isDemo, setIsDemo] = useState(false);
+
+  const handleDemo = () => {
+    console.log("Demo");
+    setIsDemo(true);
+  };
 
   const handleCellClick = (value) => {
     if (attackSent) {
       return;
     }
-    const time = counter
+    const time = counter;
     console.log(`Clicked cell value: ${value}`);
     const result = round(evaluate(value.replace("x", time)));
     socket?.emit("attack", {
       time: time,
       equation: value,
       damage: result,
-      round: currentRound
+      round: currentRound,
     });
     updatePlayer({
       ...player,
-      damage: result
-    })
+      damage: result,
+    });
     history.player[currentRound] = {
       time: time,
       equation: value,
-      damage: result
-    }
-    setAttackSent(true)
+      damage: result,
+    };
+    setAttackSent(true);
   };
 
   React.useEffect(() => {
     if (attackReceived && attackSent) {
-      setShowAnimation(true)
+      setShowAnimation(true);
 
       setTimeout(() => {
-        updatePlayer({ ...player, sprite: attackSprite })
-        updateOpponent({ ...opponent, sprite: attackSprite })
-      }, 750)
+        updatePlayer({ ...player, sprite: attackSprite });
+        updateOpponent({ ...opponent, sprite: attackSprite });
+      }, 750);
       // do animations
       setTimeout(() => {
-        const playerDamage = player.damage
-        const opponentDamage = opponent.damage
+        const playerDamage = player.damage;
+        const opponentDamage = opponent.damage;
 
-        updateOpponent({ ...opponent, health: Math.max(0, opponent.health - playerDamage), damage: 0, sprite: idleSprite })
-        updatePlayer({ ...player, health: Math.max(0, player.health - opponentDamage), damage: 0, sprite: idleSprite })
+        updateOpponent({
+          ...opponent,
+          health: Math.max(0, opponent.health - playerDamage),
+          damage: 0,
+          sprite: idleSprite,
+        });
+        updatePlayer({
+          ...player,
+          health: Math.max(0, player.health - opponentDamage),
+          damage: 0,
+          sprite: idleSprite,
+        });
 
         setTimeout(() => {
-          setShowAnimation(false)
-          setShowResult(true)
-        }, 1000)
+          setShowAnimation(false);
+          setShowResult(true);
+        }, 1000);
       }, 3000);
     }
   }, [attackSent, attackReceived]);
 
   React.useEffect(() => {
     if (player.ready && opponent.ready && isPlayer1) {
-      socket?.emit("equations", {})
+      socket?.emit("equations", {});
     }
-  }, [player.ready, opponent.ready])
+  }, [player.ready, opponent.ready]);
 
   const takePlayerName = async () => {
     const result = await Swal.fire({
@@ -114,36 +132,29 @@ const App = () => {
     });
 
     return result;
-
   };
 
   socket?.on("equations", (data) => {
-    console.log(data)
-    updatePlayer({ ...player, ready: false })
-    updateOpponent({ ...opponent, ready: false })
-    setAttackSent(false)
-    setAttackReceived(false)
-    setEquations(data)
-    setCounter(15)
-    setShowResult(false)
-  })
+    console.log(data);
+    updatePlayer({ ...player, ready: false });
+    updateOpponent({ ...opponent, ready: false });
+    setAttackSent(false);
+    setAttackReceived(false);
+    setEquations(data);
+    setCounter(15);
+    setShowResult(false);
+  });
 
   socket?.on("opponent_disconnected", () => {
-    alert(`Opponent disconnected`)
-    window.location.reload()
+    alert(`${opponent.name} disconnected`);
+    updateOpponent({ ...opponent, health: 0 });
   });
 
   socket?.on("damage", (data) => {
     console.log("received damage");
-    console.log(data)
     if (data.attacker !== socket?.id) {
       updateOpponent({ ...opponent, damage: data.damage });
-      history.opponent[data.round] = {
-        time: data.time,
-        equation: data.equation,
-        damage: data.damage,
-      }
-      setAttackReceived(true)
+      setAttackReceived(true);
     }
   });
 
@@ -158,23 +169,23 @@ const App = () => {
     if (data.player1.id !== socket?.id) {
       updateOpponent({
         ...opponent,
-        name: data.player1.userName
-      })
-      setIsPlayer1(true)
+        name: data.player1.userName,
+      });
+      setIsPlayer1(true);
     } else {
       updateOpponent({
         ...opponent,
-        name: data.player2.userName
-      })
+        name: data.player2.userName,
+      });
     }
   });
 
   socket?.on("ready", (data) => {
-    console.log(data)
+    console.log(data);
     if (data.player !== socket?.id) {
-      updateOpponent({ ...opponent, ready: true })
+      updateOpponent({ ...opponent, ready: true });
     }
-  })
+  });
 
   const playOnlineClick = async () => {
     const result = await takePlayerName();
@@ -186,7 +197,7 @@ const App = () => {
     const username = result.value;
     updatePlayer({
       ...player,
-      name: username
+      name: username,
     });
 
     const newSocket = io("http://localhost:3000", {
@@ -200,13 +211,12 @@ const App = () => {
     });
 
     setSocket(newSocket);
-  }
+  };
 
   const onReadyHandler = async () => {
-    socket?.emit("ready", {})
-    updatePlayer({ ...player, ready: true })
-    updateRound(currentRound + 1)
-  }
+    socket?.emit("ready", {});
+    updatePlayer({ ...player, ready: true });
+  };
 
   if (!difficulty) {
     return (
@@ -230,14 +240,22 @@ const App = () => {
     );
   }
 
-  if (!playOnline) {
+  if (!playOnline && !isDemo) {
     return (
       <div className="main-div">
+        <button onClick={handleDemo} className="playDemo">
+          Play Demo
+        </button>
         <button onClick={playOnlineClick} className="playOnline">
           Play Online
         </button>
       </div>
     );
+  }
+
+  if (isDemo) {
+    console.log("Demo");
+    return <Demo />;
   }
 
   if (playOnline && !opponent.name) {
@@ -251,10 +269,12 @@ const App = () => {
 
   return (
     <div className="main-div">
-      {!showAnimation && !showResult &&
+      {!showAnimation && !showResult && (
         <div>
           <h1 className="game-heading water-background">Math Duel</h1>
-          <h2 className="game-heading water-background">Round {currentRound}</h2>
+          <h2 className="game-heading water-background">
+            Round {currentRound}
+          </h2>
           <div className="expression-matrix">
             <Grid
               data={equations}
@@ -271,10 +291,20 @@ const App = () => {
             />
           </div>
         </div>
-      }
-      {!showResult && showAnimation && <Move player={player} opponent={opponent} round={currentRound} />}
+      )}
+      {!showResult && showAnimation && (
+        <Move player={player} opponent={opponent} />
+      )}
 
-      {showResult && !showAnimation && <MoveSummary onReady={onReadyHandler} player={player} opponent={opponent} history={history} round={currentRound} />}
+      {showResult && !showAnimation && (
+        <MoveSummary
+          onReady={onReadyHandler}
+          player={player}
+          opponent={opponent}
+          history={history}
+          round={currentRound}
+        />
+      )}
     </div>
   );
 };

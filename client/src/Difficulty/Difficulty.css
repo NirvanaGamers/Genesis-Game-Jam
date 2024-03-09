@@ -1,0 +1,28 @@
+@import url("https://fonts.googleapis.com/css2?family=Happy+Monkey&display=swap");
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vh;
+  gap: 10vh;
+  justify-content: center;
+  align-items: center;
+}
+
+.standards {
+  display: flex;
+  gap: 2vh;
+}
+
+button {
+  font-size: 4vw;
+  font-family: "Happy Monkey", sans-serif;
+  width: 20vw;
+  font-weight: 700;
+  border: none;
+  background-color: #e4ca56;
+  cursor: pointer;
+  border-radius: 5px;
+  outline: none;
+}

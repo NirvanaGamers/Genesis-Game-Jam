@@ -38,6 +38,8 @@ const App = () => {
   const [playOnline, setPlayOnline] = useState(false);
   const [socket, setSocket] = useState(null);
 
+  const [difficulty, setDifficulty] = useState(null);
+
   const handleCellClick = (value) => {
     if (isCellClicked) {
       return;
@@ -45,9 +47,9 @@ const App = () => {
     setIsCellClicked(true);
     console.log(`Clicked cell value: ${value}`);
     const result = evaluate(value.replace("x", counter));
-    console.log("sent attack")
+    console.log("sent attack");
     socket?.emit("attack", {
-      damage: result
+      damage: result,
     });
     setPlayerDamage(round(result));
   };
@@ -149,20 +151,20 @@ const App = () => {
   });
 
   socket?.on("damage", (data) => {
-    console.log("received damage")
+    console.log("received damage");
     if (data.attacker != socket?.id) {
       setOpponentDamage(data.result);
     }
   });
 
   socket?.on("connect", function () {
-    console.log("connected to server")
+    console.log("connected to server");
     setPlayOnline(true);
   });
 
   socket?.on("match_found", function (data) {
-    console.log("match found")
-    console.log(data)
+    console.log("match found");
+    console.log(data);
     if (data.player1.id !== socket?.id) {
       setOpponentName(data.player1.userName);
     } else {
@@ -192,13 +194,35 @@ const App = () => {
       autoConnect: true,
     });
 
-    console.log("finding match")
+    console.log("finding match");
     newSocket?.emit("find_match", {
       userName: username,
-      difficulty: "easy"
+      difficulty: difficulty,
     });
 
     setSocket(newSocket);
+  }
+
+  if (!difficulty) {
+    return (
+      <div className="container">
+        <h1>Choose Your Standard</h1>
+        <div className="standards">
+          <button onClick={() => setDifficulty("easy")} className="std-btn">
+            1-4
+          </button>
+          <button onClick={() => setDifficulty("medium")} className="std-btn">
+            5-7
+          </button>
+          <button
+            onClick={() => setDifficulty("difficult")}
+            className="std-btn"
+          >
+            8-10
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!playOnline) {

@@ -135,6 +135,9 @@ io.on("connection", async (socket) => {
     io.to(allUsers[socket.id].room).emit("damage", {
       attacker: socket.id,
       damage: data.damage,
+      time: data.time,
+      equation: data.equation,
+      round: data.round
     });
   });
 
@@ -146,7 +149,7 @@ io.on("connection", async (socket) => {
   // generate equations
   socket.on("equations", () => {
     const room = allUsers[socket.id].room;
-    io.to(room).emit("equations",  generateGrid(allRooms[room].difficulty));
+    io.to(room).emit("equations", generateGrid(allRooms[room].difficulty));
   });
 
   // handle on player disocnnect

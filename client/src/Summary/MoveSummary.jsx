@@ -1,5 +1,24 @@
-const MoveSummary = ({ onReady }) => {
-    return <div> {"Hello World"} <button onClick={onReady}>Ready</button></div>
+const MoveSummary = ({ onReady, player, opponent, history, round }) => {
+
+
+    if (player.health === 0 && opponent.health === 0) {
+        return <div>Draw <button onClick={() => window.location.reload()}>Home</button></div>
+    } else if (opponent.health === 0) {
+        return <div>You Win <button onClick={() => window.location.reload()}>Home</button></div>
+    } else if (player.health === 0) {
+        return <div>You Loose <button onClick={() => window.location.reload()}>Home</button></div>
+    }
+    console.log(history)
+    if (!player.ready) {
+        return (
+            <div>
+                Round {round}
+                <button onClick={onReady}>Ready</button>
+            </div>
+        )
+    } else {
+        return <div>Waiting for other Player</div>
+    }
 }
 
 export default MoveSummary;

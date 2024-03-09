@@ -43,19 +43,31 @@ const App = () => {
 
   const [difficulty, setDifficulty] = useState(null);
 
+  const [history, updateHistory] = useState({ player: [], opponent: [] })
+  const [currentRound, updateRound] = useState(0)
+
   const handleCellClick = (value) => {
     if (attackSent) {
       return;
     }
+    const time = counter
     console.log(`Clicked cell value: ${value}`);
-    const result = evaluate(value.replace("x", counter));
+    const result = round(evaluate(value.replace("x", time)));
     socket?.emit("attack", {
-      damage: round(result)
+      time: time,
+      equation: value,
+      damage: result,
+      round: currentRound
     });
     updatePlayer({
       ...player,
-      damage: round(result)
+      damage: result
     })
+    history.player[currentRound] = {
+      time: time,
+      equation: value,
+      damage: result
+    }
     setAttackSent(true)
   };
 
@@ -117,14 +129,20 @@ const App = () => {
   })
 
   socket?.on("opponent_disconnected", () => {
-    alert(`${opponent.name} disconnected`)
-    updateOpponent({ ...opponent, health: 0 })
+    alert(`Opponent disconnected`)
+    window.location.reload()
   });
 
   socket?.on("damage", (data) => {
     console.log("received damage");
+    console.log(data)
     if (data.attacker !== socket?.id) {
       updateOpponent({ ...opponent, damage: data.damage });
+      history.opponent[data.round] = {
+        time: data.time,
+        equation: data.equation,
+        damage: data.damage,
+      }
       setAttackReceived(true)
     }
   });
@@ -187,6 +205,7 @@ const App = () => {
   const onReadyHandler = async () => {
     socket?.emit("ready", {})
     updatePlayer({ ...player, ready: true })
+    updateRound(currentRound + 1)
   }
 
   if (!difficulty) {
@@ -235,6 +254,7 @@ const App = () => {
       {!showAnimation && !showResult &&
         <div>
           <h1 className="game-heading water-background">Math Duel</h1>
+          <h2 className="game-heading water-background">Round {currentRound}</h2>
           <div className="expression-matrix">
             <Grid
               data={equations}
@@ -252,9 +272,9 @@ const App = () => {
           </div>
         </div>
       }
-      {!showResult && showAnimation && <Move player={player} opponent={opponent} />}
+      {!showResult && showAnimation && <Move player={player} opponent={opponent} round={currentRound} />}
 
-      {showResult && !showAnimation && <MoveSummary onReady={onReadyHandler} />}
+      {showResult && !showAnimation && <MoveSummary onReady={onReadyHandler} player={player} opponent={opponent} history={history} round={currentRound} />}
     </div>
   );
 };

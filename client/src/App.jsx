@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { round, evaluate } from "mathjs";
 import Swal from "sweetalert2";
 import io from "socket.io-client";
@@ -89,13 +89,16 @@ const App = () => {
   }, [attackSent, attackReceived]);
 
   React.useEffect(() => {
-    if (!canPlay) {
-      updatePlayer({ ...player, sprite: attackSprite })
-      updateOpponent({ ...opponent, sprite: attackSprite })
+    if (player.health == 0 && opponent.health == 0) {
+      alert("Game Draw")
+    } else if (player.health == 0) {
+      alert("You Loose")
+    } else if (opponent.health == 0) {
+      alert("You Win")
     } else {
-      updatePlayer({ ...player, damage: 0, sprite: idleSprite })
-      updateOpponent({ ...opponent, damage: 0, sprite: idleSprite })
+      return
     }
+    window.location.reload()
   }, [canPlay])
 
   const takePlayerName = async () => {
@@ -114,23 +117,24 @@ const App = () => {
   };
 
   socket?.on("opponent_disconnected", () => {
-    alert("You Won");
+    alert(`${opponent.name} disconnected`)
+    updateOpponent({...opponent, health: 0})
   });
 
   socket?.on("damage", (data) => {
     console.log("received damage");
-    if (data.attacker != socket?.id) {
+    if (data.attacker !== socket?.id) {
       updateOpponent({ ...opponent, damage: data.damage });
       setAttackReceived(true)
     }
   });
 
-  socket?.on("connect", function () {
+  socket?.on("connect", () => {
     console.log("connected to server");
     setPlayOnline(true);
   });
 
-  socket?.on("match_found", function (data) {
+  socket?.on("match_found", (data) => {
     console.log("match found");
     console.log(data);
     if (data.player1.id !== socket?.id) {
@@ -145,14 +149,6 @@ const App = () => {
       })
     }
   });
-
-  // socket?.on("winner", function (data) {
-  //   alert(data.username + " Won");
-  // });
-
-  // socket?.on("draw", function () {
-  //   alert("Match was a draw!!!");
-  // });
 
   async function playOnlineClick() {
     const result = await takePlayerName();
@@ -238,6 +234,7 @@ const App = () => {
               counter={counter}
               setCounter={setCounter}
               attackSent={attackSent}
+              handleCellClick={handleCellClick}
             />
           </div>
         </div>

@@ -5,7 +5,7 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const { randomUUID } = require("crypto");
 const { SocketAddress } = require("net");
-
+import { generateGrid } from "./expGrid";
 app.use(cors());
 
 const server = http.createServer(app);
@@ -36,132 +36,138 @@ io.on("connection", async (socket) => {
     room: undefined,
   };
 
-  // creates privateRoom 
+  // creates privateRoom
   socket.on("create_room", (data) => {
-    const currentUser = allUsers[socket.id]
-    currentUser.userName = data.userName
+    const currentUser = allUsers[socket.id];
+    currentUser.userName = data.userName;
 
-    const roomId = randomUUID()
-    currentUser.room = roomId
+    const roomId = randomUUID();
+    currentUser.room = roomId;
 
-    socket.join(roomId)
+    socket.join(roomId);
 
     privateRooms[roomId] = {
       difficulty: data.difficulty,
-      players: [socket.id]
-    }
-  })
+      players: [socket.id],
+    };
+  });
 
   // join private room
   socket.on("join_room", (data) => {
-    const currentUser = allUsers[socket.io]
-    currentUser.userName = data.userName
+    const currentUser = allUsers[socket.io];
+    currentUser.userName = data.userName;
 
-    const roomId = data.roomId
+    const roomId = data.roomId;
     if (privateRooms[roomId] === undefined) {
-      socket.emit("room_not_found", {})
-      return
+      socket.emit("room_not_found", {});
+      return;
     }
-    currentUser.room = roomId
+    currentUser.room = roomId;
 
-    const room = privateRooms[roomId]
-    delete privateRooms[roomId]
+    const room = privateRooms[roomId];
+    delete privateRooms[roomId];
 
-    room.players.push(socket.id)
-    allRooms[roomId] = room
+    room.players.push(socket.id);
+    allRooms[roomId] = room;
 
-    room.players.push(socket.id)
-    socket.join(roomId)
+    room.players.push(socket.id);
+    socket.join(roomId);
 
     io.to(roomId).emit("match_found", {
       player1: {
         userName: allUsers[room.players[0]].userName,
-        id: room.players[0]
+        id: room.players[0],
       },
       player2: {
         id: socket.id,
-        userName: data.userName
-      }
-    })
-  })
+        userName: data.userName,
+      },
+    });
+  });
 
   // enter matchmaking (random queue)
   socket.on("find_match", (data) => {
-    const currentUser = allUsers[socket.id]
-    currentUser.userName = data.userName
+    const currentUser = allUsers[socket.id];
+    currentUser.userName = data.userName;
 
-    let queue = undefined
+    let queue = undefined;
     if (data.difficulty == "easy") {
-      queue = easyQueue
+      queue = easyQueue;
     } else if (data.difficulty == "medium") {
-      queue = mediumQueue
+      queue = mediumQueue;
     } else {
-      queue = hardQueue
+      queue = hardQueue;
     }
 
     if (queue.length > 0) {
-      const opponent = queue.pop()
-      const roomId = randomUUID()
+      const opponent = queue.pop();
+      const roomId = randomUUID();
       const room = {
         difficulty: data.difficulty,
-        players: [currentUser.socket.id, opponent.socket.id]
-      }
-      allRooms[roomId] = room
+        players: [currentUser.socket.id, opponent.socket.id],
+      };
+      allRooms[roomId] = room;
 
-      opponent.socket.join(roomId)
-      currentUser.socket.join(roomId)
+      opponent.socket.join(roomId);
+      currentUser.socket.join(roomId);
 
-      opponent.room = roomId
-      currentUser.room = roomId
+      opponent.room = roomId;
+      currentUser.room = roomId;
 
       io.to(roomId).emit("match_found", {
         player1: {
           id: currentUser.socket.id,
-          userName: currentUser.userName
+          userName: currentUser.userName,
         },
         player2: {
           id: opponent.socket.id,
-          userName: opponent.userName
-        }
-      })
+          userName: opponent.userName,
+        },
+      });
     } else {
-      queue.push(currentUser)
+      queue.push(currentUser);
     }
-  })
+  });
 
   // send damage
   socket.on("attack", (data) => {
-    io.to(allUsers[socket.id].room).emit("damage", {attacker: socket.id, damage: data.damage})
-  })
+    io.to(allUsers[socket.id].room).emit("damage", {
+      attacker: socket.id,
+      damage: data.damage,
+    });
+  });
 
   // send game result
   socket.on("win", () => {
-    io.to(allUsers[socket.id].room).emit("result", {winner: socket.id})
-  })
+    io.to(allUsers[socket.id].room).emit("result", { winner: socket.id });
+  });
 
   // generate equations
   socket.on("get_equations", () => {
-    const room = allUsers[socket.id].room
-    io.to(room).emit("equations", getEquations(allRooms[room].difficulty))
-  })
+    const room = allUsers[socket.id].room;
+    io.to(room).emit("equations", getEquations(allRooms[room].difficulty));
+  });
 
   // handle on player disocnnect
   socket.on("disconnect", (reason) => {
-    const currentUser = allUsers[socket.id]
-    const roomId = currentUser.room
+    const currentUser = allUsers[socket.id];
+    const roomId = currentUser.room;
 
     if (roomId && allRooms[roomId] !== undefined) {
-      const players = allRooms[roomId].players
-      if (players[0] === socket.id) { players[1].room == undefined} else {}
-      
-      delete allRooms[roomId]
+      const players = allRooms[roomId].players;
+      if (players[0] === socket.id) {
+        players[1].room == undefined;
+      } else {
+      }
 
-      socket.to(roomId).emit("opponent_disconnected", reason)
+      delete allRooms[roomId];
+
+      socket.to(roomId).emit("opponent_disconnected", reason);
     } else if (roomId && privateRooms[roomId] !== undefined) {
-      delete privateRooms[roomId]
+      delete privateRooms[roomId];
     }
 
-    delete allUsers[socket.id]
+    delete allUsers[socket.id];
   });
 });
 

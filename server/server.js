@@ -52,6 +52,7 @@ io.on("connection", async (socket) => {
     }
   })
 
+  // join private room
   socket.on("join_room", (data) => {
     const currentUser = allUsers[socket.io]
     currentUser.userName = data.userName
@@ -78,6 +79,7 @@ io.on("connection", async (socket) => {
     })
   })
 
+  // enter matchmaking (random queue)
   socket.on("find_match", (data) => {
     const currentUser = allUsers[socket.id]
     currentUser.name = data.userName
@@ -115,73 +117,27 @@ io.on("connection", async (socket) => {
     }
   })
 
-  // puts player in random queue
-  socket.on("request_to_play", (data) => {
-    const currentUser = allUsers[socket.id];
-    currentUser.playerName = data.playerName;
+  // send damage
 
-    let opponentPlayer;
+  // update equations
 
-    for (const key in allUsers) {
-      const user = allUsers[key];
-      if (user.online && !user.playing && socket.id !== key) {
-        opponentPlayer = user;
-        break;
-      }
-    }
-
-    if (opponentPlayer) {
-      allRooms.push({
-        player1: opponentPlayer,
-        player2: currentUser,
-      });
-
-      currentUser.socket.emit("OpponentFound", {
-        opponentName: opponentPlayer.playerName,
-      });
-
-      opponentPlayer.socket.emit("OpponentFound", {
-        opponentName: currentUser.playerName,
-      });
-
-      currentUser.socket.on("playerMoveFromClient", (data) => {
-        currentUser.damage = data.result;
-        opponentPlayer.socket.emit("playerMoveFromServer", {
-          ...data,
-        });
-      });
-k
-      opponentPlayer.socket.on("playerMoveFromClient", (data) => {
-        opponentPlayer.damage = data.result;
-        currentUser.socket.emit("playerMoveFromServer", {
-          ...data,
-        });
-      });
-    } else {
-      currentUser.socket.emit("OpponentNotFound");
-    }
-  });
-
+  // handle on player disocnnect
   socket.on("disconnect", (reason) => {
-    console.log(reason);
-    const currentUser = allUsers[socket.id];
-    currentUser.online = false;
-    currentUser.playing = false;
+    const currentUser = allUsers[socket.id]
+    const roomId = currentUser.room
 
-    for (let index = 0; index < allRooms.length; index++) {
-      const { player1, player2 } = allRooms[index];
+    if (roomId && allRooms[roomId] !== undefined) {
+      const players = allRooms[roomId].players
+      if (players[0] === socket.id) { players[1].room == undefined} else {}
+      
+      delete allRooms[roomId]
 
-      if (player1.socket.id === socket.id) {
-        player2.socket.emit("opponentLeftMatch");
-        break;
-      }
-
-      if (player2.socket.id === socket.id) {
-        player1.socket.emit("opponentLeftMatch");
-        break;
-      }
+      socket.to(roomId).emit("opponent_disconnected", reason)
+    } else if (roomId && privateRooms[roomId] !== undefined) {
+      delete privateRooms[roomId]
     }
-    delete allUsers[socket.id];
+
+    delete allUsers[socket.id]
   });
 });
 

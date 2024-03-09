@@ -20,116 +20,75 @@ const data = [
 ];
 
 const App = () => {
-  const [playerDamage, setPlayerDamage] = useState(null);
-  const [playerHealth, setPlayerHealth] = useState(100);
-  const [opponentHealth, setOpponentHealth] = useState(100);
-  const [opponentDamage, setOpponentDamage] = useState(null);
-  const [counter, setCounter] = useState(15);
-  const [isCellClicked, setIsCellClicked] = useState(false);
-  const [isPlayerAttacking, setIsPlayerAttacking] = useState(false);
-  const [isOppAttacking, setIsOppAttacking] = useState(false);
-  const setCounterRef = useRef(setCounter);
   const idleSprite = "../src/assets/Character/Archer/Idle.png";
   const attackSprite = "../src/assets/Character/Archer/Shot_1.png";
-  const [playerActiveSprite, setPlayerActiveSprite] = useState(idleSprite);
-  const [oppActiveSprite, setOppActiveSprite] = useState(idleSprite);
-  const [playerName, setPlayerName] = useState("");
-  const [opponentName, setOpponentName] = useState(null);
+
+  const [player, updatePlayer] = useState({
+    name: "",
+    damage: null,
+    health: 100,
+    sprite: idleSprite
+  })
+  const [opponent, updateOpponent] = useState({
+    name: null,
+    damage: null,
+    health: 100,
+    sprite: idleSprite
+  })
+  
+  const [counter, setCounter] = useState(15)
+  const [attackSent, setAttackSent] = useState(false)
+  const [attackReceived, setAttackReceived] = useState(false)
+  const [canPlay, setCanPlay] = useState(true)
+
   const [playOnline, setPlayOnline] = useState(false);
   const [socket, setSocket] = useState(null);
 
   const [difficulty, setDifficulty] = useState(null);
 
   const handleCellClick = (value) => {
-    if (isCellClicked) {
+    if (attackSent) {
       return;
     }
-    setIsCellClicked(true);
     console.log(`Clicked cell value: ${value}`);
-    const result = evaluate(value.replace("x", counter));
-    console.log("sent attack");
+    const result = evaluate(value.replace("x", turn.counter));
     socket?.emit("attack", {
-      damage: result,
+      damage: round(result)
     });
-    setPlayerDamage(round(result));
+    updatePlayer({
+      ...player,
+      damage: round(result)
+    })
+    setAttackSent(true)
   };
 
   React.useEffect(() => {
-    setCounterRef.current = setCounter;
-  }, [setCounter]);
-
-  React.useEffect(() => {
-    if (playerDamage) {
-      setIsPlayerAttacking(true);
-      // Decrease playerHealth by 1 unit until it becomes zero or equal to playerHealth - playerDamage
-      const interval = setInterval(() => {
-        setOpponentHealth((prevHealth) => {
-          if (prevHealth <= prevHealth - playerDamage || prevHealth == 0) {
-            clearInterval(interval);
-            return prevHealth;
-          }
-          return prevHealth - 1;
-        });
-        setPlayerDamage((prevDamage) => {
-          if (prevDamage <= 0) {
-            return prevDamage;
-          }
-          return prevDamage - 1;
-        });
-      }, 500);
-      // Clear the interval when the component unmounts
-      return () => clearInterval(interval);
+    if (player.damage) {
+      updatePlayer({ ...player, sprite: attackSprite });
+      setTimeout(() => {
+        updateOpponent({ ...opponent, health: Math.max(0, opponent.health - player.damage) })
+        updatePlayer({ ...player, damage: 0, sprite: idleSprite })
+        if (turn.attack_sent && turn.attack_received) {
+          updateTurn({...turn, can_play: true})
+        }
+      }, 2000);
     }
-    setIsPlayerAttacking(false);
-  }, [playerDamage]);
+  }, [turn.attack_sent]);
 
   React.useEffect(() => {
-    if (opponentDamage) {
-      setIsOppAttacking(true);
-      // Decrease playerHealth by 1 unit until it becomes zero or equal to playerHealth - playerDamage
-      const interval = setInterval(() => {
-        setPlayerHealth((prevHealth) => {
-          if (prevHealth <= prevHealth - opponentDamage || prevHealth == 0) {
-            clearInterval(interval);
-            return prevHealth;
-          }
-          return prevHealth - 1;
-        });
-        setOpponentDamage((prevDamage) => {
-          if (prevDamage <= 0) {
-            return prevDamage;
-          }
-          return prevDamage - 1;
-        });
-      }, 300);
-      // Clear the interval when the component unmounts
-      return () => clearInterval(interval);
+    if (opponent.damage) {
+      updateOpponent({ ...opponent, sprite: attackSprite });
+      setTimeout(() => {
+        updatePlayer({ ...player, health: Math.max(0, player.health - opponent.damage) })
+        updateOpponent({ ...opponent, damage: 0, sprite: idleSprite })
+        if (turn.attack_sent && turn.attack_received) {
+          updateTurn({...turn, can_play: true})
+        }
+      }, 2000);
+    } else {
+      updateOpponent({ ...opponent, sprite: idleSprite })
     }
-    setIsOppAttacking(false);
-  }, [opponentDamage]);
-
-  React.useEffect(() => {
-    isPlayerAttacking
-      ? setPlayerActiveSprite(attackSprite)
-      : setPlayerActiveSprite(idleSprite);
-    isOppAttacking
-      ? setOppActiveSprite(attackSprite)
-      : setOppActiveSprite(idleSprite);
-
-    // console.log(playerActiveSprite);
-  }, [isPlayerAttacking, isOppAttacking, playerActiveSprite]);
-
-  React.useEffect(() => {
-    if (!isPlayerAttacking && !isOppAttacking && playOnline) {
-      if (playerHealth > opponentHealth) {
-        alert(playerName + " You Won");
-      } else if (opponentHealth > playerHealth) {
-        alert(opponentName + "You Won");
-      } else {
-        alert("It's a DRAW");
-      }
-    }
-  }, [isPlayerAttacking, isOppAttacking, playerHealth, opponentHealth]);
+  }, [turn.attack_received]);
 
   const takePlayerName = async () => {
     const result = await Swal.fire({
@@ -153,7 +112,8 @@ const App = () => {
   socket?.on("damage", (data) => {
     console.log("received damage");
     if (data.attacker != socket?.id) {
-      setOpponentDamage(data.result);
+      updateOpponent({ ...opponent, damage: data.damage });
+      updateTurn({ ...turn, attack_received: true})
     }
   });
 
@@ -166,9 +126,15 @@ const App = () => {
     console.log("match found");
     console.log(data);
     if (data.player1.id !== socket?.id) {
-      setOpponentName(data.player1.userName);
+      updateOpponent({
+        ...opponent,
+        name: data.player1.userName
+      })
     } else {
-      setOpponentName(data.player2.userName);
+      updateOpponent({
+        ...opponent,
+        name: data.player2.userName
+      })
     }
   });
 
@@ -188,7 +154,10 @@ const App = () => {
     }
 
     const username = result.value;
-    setPlayerName(username);
+    updatePlayer({
+      ...player,
+      name: username
+    });
 
     const newSocket = io("http://localhost:3000", {
       autoConnect: true,
@@ -235,9 +204,10 @@ const App = () => {
     );
   }
 
-  if (playOnline && !opponentName) {
+  if (playOnline && !opponent.name) {
     return (
       <div className="waiting">
+        {player.name}
         <p>Waiting for opponent</p>
       </div>
     );
@@ -251,29 +221,28 @@ const App = () => {
           <Grid
             data={data}
             onCellClick={handleCellClick}
-            isCellClicked={isCellClicked}
+            isCellClicked={turn.attack_sent}
           />
         </div>
         <div className="timer">
           <Timer
-            counter={counter}
-            setCounter={setCounterRef.current}
-            isCellClicked={isCellClicked}
+            turn={turn}
+            setTurn={updateTurn}
           />
         </div>
       </div>
       <div className="users">
         <div className="player">
-          <div className="player-tag">{playerName}</div>
-          <Player imageUrl={playerActiveSprite} />
-          <div className="user-health">HP : {playerHealth}</div>
-          <div className="user-damage">Attack : {playerDamage}</div>
+          <div className="player-tag">{player.name}</div>
+          <Player imageUrl={player.sprite} />
+          <div className="user-health">HP : {player.health}</div>
+          <div className="user-damage">Attack : {player.damage}</div>
         </div>
         <div className="opponent">
-          <div className="opp-tag">{opponentName}</div>
-          <Player imageUrl={oppActiveSprite} flip />
-          <div className="opp-health">HP : {opponentHealth}</div>
-          <div className="opp-damage">Attack : {opponentDamage}</div>
+          <div className="opp-tag">{opponent.name}</div>
+          <Player imageUrl={opponent.sprite} flip />
+          <div className="opp-health">HP : {opponent.health}</div>
+          <div className="opp-damage">Attack : {opponent.damage}</div>
         </div>
       </div>
     </div>

@@ -139,7 +139,11 @@ io.on("connection", async (socket) => {
     io.to(allUsers[socket.id].room).emit("result", {winner: socket.id})
   })
 
-  // update equations
+  // generate equations
+  socket.on("get_equations", () => {
+    const room = allUsers[socket.id].room
+    io.to(room).emit("equations", getEquations(allRooms[room].difficulty))
+  })
 
   // handle on player disocnnect
   socket.on("disconnect", (reason) => {

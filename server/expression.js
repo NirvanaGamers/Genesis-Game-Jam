@@ -47,7 +47,7 @@ function mediumExpression() {
   return expression;
 }
 
-function hardEquation() {
+function hardExpression() {
   const operators = ["+", "-", "/"];
   const maxCoeff = 5;
 
@@ -85,7 +85,7 @@ function generateExpression(difficulty = "easy") {
     case "medium":
       exp = mediumExpression();
       break;
-    case "difficult":
+    case "hard":
       exp = hardExpression();
       break;
   }

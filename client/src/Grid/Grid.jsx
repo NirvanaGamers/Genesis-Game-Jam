@@ -5,17 +5,18 @@ import "./Grid.css";
 const Grid = (props) => {
   const cells = [];
   for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
+    const jlimit = props.data.length / 3
+    for (let j = 0; j < jlimit; j++) {
       cells.push(
         <div
-          id={"cell" + (i * 3 + j)}
-          key={i * 3 + j}
+          id={"cell" + (i + j * 3)}
+          key={i + j * 3}
           className="cell"
           onClick={() => {
-            props.onCellClick(props.data[i * 3 + j]);
+            props.onCellClick(props.data[i + j * 3]);
           }}
         >
-          {props.data[i * 3 + j]}
+          {props.data[i + j * 3]}
         </div>
       );
     }

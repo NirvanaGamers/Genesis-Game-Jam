@@ -39,7 +39,7 @@ function generateGrid(difficulty = "easy") {
       grid = genMediumGrid();
       break;
     case "difficult":
-      grid = genDifficultGrid();
+      grid = genHardGrid();
       break;
   }
 

@@ -84,7 +84,7 @@ const App = () => {
   }, [attackSent, attackReceived]);
 
   React.useEffect(() => {
-    if (player.ready && opponent.ready) {
+    if (player.ready && opponent.ready && isPlayer1) {
       socket?.emit("equations", {})
     }
   }, [player.ready, opponent.ready])

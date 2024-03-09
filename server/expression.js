@@ -92,4 +92,4 @@ function generateExpression(difficulty = "easy") {
   return exp;
 }
 
-// export { generateExpression };
+export { generateExpression };

@@ -1,11 +1,12 @@
-const express = require("express");
+import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+import cors from "cors";
+import { randomUUID } from "crypto";
+import { generateGrid } from "./expGrid.js";
+
+
 const app = express();
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
-const { randomUUID } = require("crypto");
-const { SocketAddress } = require("net");
-const { generateGrid } = require("./expGrid")
 app.use(cors());
 
 const server = http.createServer(app);
@@ -143,9 +144,9 @@ io.on("connection", async (socket) => {
   });
 
   // generate equations
-  socket.on("get_equations", () => {
+  socket.on("equations", () => {
     const room = allUsers[socket.id].room;
-    io.to(room).emit("equations", getEquations(allRooms[room].difficulty));
+    io.to(room).emit("equations",  generateGrid(allRooms[room].difficulty));
   });
 
   // handle on player disocnnect

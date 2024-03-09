@@ -8,18 +8,6 @@ import Timer from "./Timer/Timer";
 import Move from "./Move/Move";
 import MoveSummary from "./Summary/MoveSummary";
 
-const data = [
-  "2 * x",
-  "x + 20",
-  "200 - x",
-  "500 / x",
-  "3 * x - 2 * x",
-  "2000 + x",
-  "3 * x / 2",
-  "x",
-  "2 * x + 1",
-];
-
 const App = () => {
   const idleSprite = "../src/assets/Character/Archer/Idle.png";
   const attackSprite = "../src/assets/Character/Archer/Shot_1.png";
@@ -45,10 +33,13 @@ const App = () => {
   const [attackReceived, setAttackReceived] = useState(false)
 
   const [showAnimation, setShowAnimation] = useState(false)
-  const [showResult, setShowResult] = useState(false)
+  const [showResult, setShowResult] = useState(true)
 
   const [playOnline, setPlayOnline] = useState(false);
   const [socket, setSocket] = useState(null);
+
+  const [isPlayer1, setIsPlayer1] = useState(false)
+  const [equations, setEquations] = useState(false)
 
   const [difficulty, setDifficulty] = useState(null);
 
@@ -94,15 +85,10 @@ const App = () => {
 
   React.useEffect(() => {
     if (player.ready && opponent.ready) {
-      updatePlayer({ ...player, ready: false })
-      updateOpponent({ ...opponent, ready: false })
-      setAttackSent(false)
-      setAttackReceived(false)
-      setCounter(15)
-      setShowResult(false)
+      socket?.emit("equations", {})
     }
   }, [player.ready, opponent.ready])
-  
+
   const takePlayerName = async () => {
     const result = await Swal.fire({
       title: "Enter your name",
@@ -116,7 +102,19 @@ const App = () => {
     });
 
     return result;
+
   };
+
+  socket?.on("equations", (data) => {
+    console.log(data)
+    updatePlayer({ ...player, ready: false })
+    updateOpponent({ ...opponent, ready: false })
+    setAttackSent(false)
+    setAttackReceived(false)
+    setEquations(data)
+    setCounter(15)
+    setShowResult(false)
+  })
 
   socket?.on("opponent_disconnected", () => {
     alert(`${opponent.name} disconnected`)
@@ -144,6 +142,7 @@ const App = () => {
         ...opponent,
         name: data.player1.userName
       })
+      setIsPlayer1(true)
     } else {
       updateOpponent({
         ...opponent,
@@ -238,7 +237,7 @@ const App = () => {
           <h1 className="game-heading water-background">Math Duel</h1>
           <div className="expression-matrix">
             <Grid
-              data={data}
+              data={equations}
               onCellClick={handleCellClick}
               isCellClicked={attackSent}
             />

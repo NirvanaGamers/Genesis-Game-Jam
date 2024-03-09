@@ -1,4 +1,5 @@
-const { generateExpression } = require("./expression");
+import {generateExpression} from "./expression.js"
+
 
 function genEasyGrid() {
   let grid = [];
@@ -41,6 +42,8 @@ function generateGrid(difficulty = "easy") {
       grid = genDifficultGrid();
       break;
   }
+
+  return grid
 }
 
-// export { generateGrid };
+export { generateGrid };

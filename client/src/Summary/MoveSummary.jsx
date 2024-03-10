@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
+import "./MoveSummary.css";
 
 const MoveSummary = ({ onReady, player, opponent, history, round }) => {
     if (round === 0) {
@@ -39,11 +40,46 @@ const MoveSummary = ({ onReady, player, opponent, history, round }) => {
         )
     }
 
+
+
     if (!player.ready) {
+        const [time, setTime] = useState(100000)
+
+        useEffect(() => {
+            if (time === 0) {
+                onReady()
+            }
+            setTimeout(() => {
+                setTime(time - 1)
+            }, 1000)
+        }, [time])
+
         return (
-            <div className="container">
-                Round {round}
-                <button onClick={onReady}>Ready</button>
+            <div className="container" style={{gap: 0}}>
+                <h2 className="game-heading water-background">Round {round}</h2>
+                <div className="users">
+                    <div className="player">
+                        <div className="player-tag">{player.name}</div>
+                        <div>Move Chosen: {history.player[round].equation}</div>
+                        <div>Time Remaining: {history.player[round].time}</div>
+                        <div>Attack Power: {history.player[round].damage}</div>
+                        <div>Initial Health: {player.health + history.opponent[round].damage}</div>
+                        <div>Damage Taken: {history.opponent[round].damage}</div>
+                        <div>Health After: {player.health}</div>
+                    </div>
+
+                    <div className="opponent">
+                        <div className="opp-tag">{opponent.name}</div>
+                        <div>Move Chosen: {history.opponent[round].equation}</div>
+                        <div>Time Remaining: {history.opponent[round].time}</div>
+                        <div>Attack Power: {history.opponent[round].damage}</div>
+                        <div>Initial Health: {opponent.health + history.player[round].damage}</div>
+                        <div>Damage Taken: {history.player[round].damage}</div>
+                        <div>Health After: {opponent.health}</div>
+                    </div>
+                </div>
+                <button className="playOnline" style={{ marginTop: 0 }} onClick={onReady}>Ready</button>
+                <p>Skipping in {time}</p>
             </div>
         )
     } else {

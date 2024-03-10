@@ -4,7 +4,7 @@ import "./Demo.css";
 import Grid from "../Grid/Grid";
 import Player from "../Player/Player";
 
-const AttackData = ["7 * 8", "9 + 19", "240 - 215"];
+const AttackData = ["7 * 8", "9 + 19", "40 - 15"];
 const startStory =
   "A long long time ago there was a math-kingdom which was having war against math barbarians, as a main attacker help math-kingdom....";
 
@@ -20,6 +20,10 @@ const Demo = () => {
   const [oppHealth, setOppHealth] = useState(100);
   const [userAttack, setUserAttack] = useState(0);
   const [defence, setDefence] = useState(20);
+
+  const idleSprite = "../src/assets/Character/Archer/Idle.png";
+  const attackSprite = "../src/assets/Character/Archer/Shot_1.png";
+  const [playerSprite, setPlayerSprite] = useState(idleSprite);
 
   useEffect(() => {
     if (!isStory && !isGame) {
@@ -93,13 +97,13 @@ const Demo = () => {
       <div className="users">
         <div className="player">
           Player
-          <Player />
+          <Player imageUrl={playerSprite} />
           <div className="user-health">HP: {userHealth}</div>
           <div className="user-damage">Attack: {userAttack}</div>
         </div>
         <div className="opponent">
           Opponent
-          <Player />
+          <Player imageUrl={playerSprite} flip={true} />
           <div className="opp-health">HP: {oppHealth}</div>
           <div className="opp-damage">Defense: {defence}</div>
         </div>

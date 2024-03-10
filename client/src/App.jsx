@@ -7,8 +7,9 @@ import Grid from "./Grid/Grid";
 import Timer from "./Timer/Timer";
 import Move from "./Move/Move";
 import MoveSummary from "./Summary/MoveSummary";
-import Demo from "./Demo/Demo";
+// import Demo from "./Demo/Demo";
 import Instructions from "./Demo/Instructions";
+
 const App = () => {
   const idleSprite = "../src/assets/Character/Archer/Idle.png";
   const attackSprite = "../src/assets/Character/Archer/Shot_1.png";
@@ -147,7 +148,7 @@ const App = () => {
 
   socket?.on("opponent_disconnected", () => {
     alert(`Opponent disconnected`);
-    window.location.reload()
+    window.location.reload();
   });
 
   socket?.on("damage", (data) => {
@@ -159,7 +160,7 @@ const App = () => {
         damage: data.damage,
         time: data.time,
         equation: data.equation,
-      }
+      };
     }
   });
 
@@ -221,7 +222,7 @@ const App = () => {
   const onReadyHandler = async () => {
     socket?.emit("ready", {});
     updatePlayer({ ...player, ready: true });
-    updateRound(currentRound + 1)
+    updateRound(currentRound + 1);
   };
 
   if (!difficulty) {
@@ -260,10 +261,19 @@ const App = () => {
   }
 
   if (isDemo) {
-    return<div>
-      <Instructions />
-      <button className = "go-back" onClick={()=>{setIsDemo(false)}}>Go Back</button>
-    </div>
+    return (
+      <div>
+        <Instructions />
+        <button
+          className="go-back"
+          onClick={() => {
+            setIsDemo(false);
+          }}
+        >
+          Go Back
+        </button>
+      </div>
+    );
   }
 
   if (playOnline && !opponent.name) {

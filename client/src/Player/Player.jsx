@@ -9,6 +9,7 @@ const Player = ({ imageUrl, flip }) => {
         style={{
           backgroundImage: `url(${imageUrl})`,
           transform: flip ? "scaleX(-1)" : "none",
+          filter: flip ? "hue-rotate(0deg)": "hue-rotate(100deg)",
         }}
       />
     </div>

@@ -147,7 +147,7 @@ const App = () => {
 
   socket?.on("opponent_disconnected", () => {
     alert(`${opponent.name} disconnected`);
-    updateOpponent({ ...opponent, health: 0 });
+    window.location.reload()
   });
 
   socket?.on("damage", (data) => {

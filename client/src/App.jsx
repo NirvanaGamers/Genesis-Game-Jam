@@ -155,6 +155,11 @@ const App = () => {
     if (data.attacker !== socket?.id) {
       updateOpponent({ ...opponent, damage: data.damage });
       setAttackReceived(true);
+      history.opponent[data.round] = {
+        damage: data.damage,
+        time: data.time,
+        equation: data.equation,
+      }
     }
   });
 
@@ -216,6 +221,7 @@ const App = () => {
   const onReadyHandler = async () => {
     socket?.emit("ready", {});
     updatePlayer({ ...player, ready: true });
+    updateRound(currentRound + 1)
   };
 
   if (!difficulty) {
@@ -293,7 +299,7 @@ const App = () => {
         </div>
       )}
       {!showResult && showAnimation && (
-        <Move player={player} opponent={opponent} />
+        <Move player={player} opponent={opponent} round={currentRound} />
       )}
 
       {showResult && !showAnimation && (

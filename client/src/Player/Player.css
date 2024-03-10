@@ -9,6 +9,23 @@
     background-position: 0px;
   }
   to {
-    background-position: -512px; /* Set the final position of the sprite */
+    background-position: 512px; /* Set the final position of the sprite */
+  }
+}
+
+.sprite.shoot {
+  /* Define shooting animation */
+  animation: shootAnimation 1s linear forwards;
+}
+
+
+@keyframes shootAnimation {
+  from {
+    /* Initial position of the bullet (e.g., off-screen) */
+    transform: translateX(-100%);
+  }
+  to {
+    /* Final position of the bullet (e.g., on-screen) */
+    transform: translateX(100%);
   }
 }

@@ -3,7 +3,7 @@ import "./Player.css";
 
 const Player = ({ imageUrl, flip }) => {
   return (
-    <div>
+    <div className="sprite-bg">
       <div
         className="sprite"
         style={{

@@ -266,15 +266,15 @@ const App = () => {
 
   if (playOnline && !opponent.name) {
     return (
-      <div className="waiting">
-        {player.name}
-        <p>Waiting for opponent</p>
+      <div className="container">
+        {/* {player.name} */}
+        <h1>Searching for opponent</h1>
       </div>
     );
   }
 
   return (
-    <div className="main-div">
+    <div className="container">
       {!showAnimation && !showResult && (
         <div>
           <h1 className="game-heading water-background">Math Duel</h1>

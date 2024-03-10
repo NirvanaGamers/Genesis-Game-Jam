@@ -1,0 +1,41 @@
+.arena {
+	position: relative;
+	width: 500px;
+	height: 300px;
+	border: 1px solid black;
+	margin: 0 auto;
+  }
+
+  .projectile1 {
+	position: absolute;
+	background-color: red;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+  }
+
+  .projectile2 {
+	position: absolute;
+	background-color: blue;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+  }
+
+  @keyframes moveLeft {
+	from {
+	  left: 0;
+	}
+	to {
+	  left: 100%;
+	}
+  }
+
+  @keyframes moveRight {
+	from {
+	  right: 0;
+	}
+	to {
+	  right: 100%;
+	}
+  }

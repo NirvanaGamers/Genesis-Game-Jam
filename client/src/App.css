@@ -28,6 +28,20 @@ body {
   outline: none;
 }
 
+.go-back{
+  font-weight: 700;
+  border: none;
+  background-color: #e4ca56;
+  font-size: 30px;
+  cursor: pointer;
+  margin-top: 3vh;
+  padding: 6px 10px;
+  border-radius: 5px;
+  outline: none;
+  margin-left: 20px;
+}
+
+
 .waiting {
   font-size: 48px;
   text-align: center;

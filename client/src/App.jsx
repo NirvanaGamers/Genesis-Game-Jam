@@ -8,7 +8,7 @@ import Timer from "./Timer/Timer";
 import Move from "./Move/Move";
 import MoveSummary from "./Summary/MoveSummary";
 import Demo from "./Demo/Demo";
-
+import Instructions from "./Demo/Instructions";
 const App = () => {
   const idleSprite = "../src/assets/Character/Archer/Idle.png";
   const attackSprite = "../src/assets/Character/Archer/Shot_1.png";
@@ -250,7 +250,7 @@ const App = () => {
     return (
       <div className="main-div">
         <button onClick={handleDemo} className="playDemo">
-          Play Demo
+          Instructions
         </button>
         <button onClick={playOnlineClick} className="playOnline">
           Play Online
@@ -260,8 +260,10 @@ const App = () => {
   }
 
   if (isDemo) {
-    console.log("Demo");
-    return <Demo />;
+    return<div>
+      <Instructions />
+      <button className = "go-back" onClick={()=>{setIsDemo(false)}}>Go Back</button>
+    </div>
   }
 
   if (playOnline && !opponent.name) {

@@ -260,11 +260,10 @@ const App = () => {
   }
 
   if (isDemo) {
-    // console.log("Demo");
-    setTimeout(() => {
-        handleDemo(false);
-    }, 5000);
-    return <Instructions />;
+    return<div>
+      <Instructions />
+      <button className = "go-back" onClick={()=>{setIsDemo(false)}}>Go Back</button>
+    </div>
   }
 
   if (playOnline && !opponent.name) {

@@ -41,7 +41,7 @@ const MoveSummary = ({ onReady, player, opponent, history, round }) => {
 
     if (!player.ready) {
         return (
-            <div>
+            <div className="container">
                 Round {round}
                 <button onClick={onReady}>Ready</button>
             </div>

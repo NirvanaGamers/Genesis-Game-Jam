@@ -2,6 +2,10 @@
   user-select: none;
 }
 
+body {
+  margin: 0;
+}
+
 .main-div {
   display: flex;
   height: 100%;

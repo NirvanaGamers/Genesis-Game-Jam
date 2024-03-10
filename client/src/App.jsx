@@ -146,7 +146,7 @@ const App = () => {
   });
 
   socket?.on("opponent_disconnected", () => {
-    alert(`${opponent.name} disconnected`);
+    alert(`Opponent disconnected`);
     window.location.reload()
   });
 
